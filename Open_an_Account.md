@@ -11,6 +11,7 @@ Modifications from the SANS guide:
 - Have your password manager create and store all credentials
 - Don't follow the 'close your account' process unless you'd actually like to close your account (don't know why that's listed as one of the first sections)
 - Use whatever username you'd like (instead of the SANS SEC545 user from the class)
+- Keep in mind your AWS account name (created at during the "Create an AWS Account" step) is not your AWS alias (optional to create during the "Create an AWS User" step by customizing your IAM users sign-in link)
 - Don't worry about installing VMware (listed on the last page)
 
 At the end you'll have:
