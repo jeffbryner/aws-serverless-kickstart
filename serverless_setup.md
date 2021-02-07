@@ -56,3 +56,40 @@ Now back in VSCode, click the settings/gear icon at the bottom left, choose sett
 
 Now type in formatOnSave and ensure the option is checked true.
 
+## Serverless plugins
+Last step in our setup lets ensure we have the serverless plugins we will need to develop a python lambda function.
+
+The serverless framework supports plugins and there are many, many choices to help you in your development tasks. You can get a list of all supported plugins with
+
+```bash
+sls plugin list
+```
+
+Before adding plugins we must initialize our project:
+
+```bash
+sls
+```
+
+will prompt us through creating a new project. Choose AWS python and name your project serverless-kickstart.  You do not need to signup for a serverless account.
+
+For this project we will use the python requirements plugin which will help us package up our lambda function and include whatever libraries we import.
+
+```bash
+cd serverless-kickstart
+sls plugin install --name serverless-python-requirements
+```
+
+Now if you list your files you should see the basic scaffolding that the serverless framework has installed.
+
+```bash
+ls -la
+handler.py
+node_modules
+package-lock.json
+package.json
+serverless.yml
+```
+
+The handler.py file is where we will put our python code. The node_modules directory is used by the serverless framework. The package*.json files are where serverless keeps track of what version of it's supporting libraries are in use. Lastly the serverless.yml file is the configuration for our lambda function.
+
