@@ -1,0 +1,29 @@
+service: serverless-kickstart
+custom:
+  pythonRequirements:
+    dockerizePip: false
+
+provider:
+  name: aws
+  runtime: python3.7
+  stage: ${opt:stage,'dev'}
+  region: us-west-2
+  environment:
+    ENVIRONMENT: ${self:provider.stage}
+    REGION: ${opt:region, self:provider.region}
+
+functions:
+  serverless-cron:
+    handler: handler.cron
+    timeout: 600
+    reservedConcurrency: 1
+    events:
+      - schedule: rate(1 minute)
+
+package:
+  exclude:
+    - node_modules/**
+    - .pytest_cache/**
+
+plugins:
+  - serverless-python-requirements
