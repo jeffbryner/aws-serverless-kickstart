@@ -13,7 +13,7 @@ Here's what this kickstart covers:
 
  - [Open an AWS account (setup IAM user, MFA)](Open_an_Account.md)
  - Setup your [AWS command line environment](aws_cli.md)
- - Setup serverless environment
+ - Setup [serverless environment](serverless_setup.md)
  - Create a simple serverless python program
  - Deploy serverless cron job
  - Make serverless cron job useful (simple gspread integration)
