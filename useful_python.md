@@ -144,7 +144,7 @@ secrets_manager = boto_session.client("secretsmanager")
 API_KEY = secrets_manager.get_secret_value(SecretId=API_KEY_NAME)["SecretString"]
 
 
-#lastly, add this to your debug statements (properly indented)
+#temporarily add this to your debug statements (properly indented)
 logger.debug("API Key is: {}".format(API_KEY))
 
 ```
@@ -165,4 +165,16 @@ In your serverless.yml file add the following to the provider stanza:
 
 ```
 This allows our function to get the secret value for the ARN associated with our secret. You'll notice we are pulling portions of the ARN from variables within the serverless.yml file, and ending with they API_KEY_NAME* to allow for the unique random bit aws appends to the end ( kickstart_api_key-3aiKqB in this case ).
+
+
+At this point you can deploy your function and it should be able to read and log the dummy value we used as an api key secret.
+
+When you are satisfied it works, be sure to remote the:
+
+```python
+logger.debug("API Key is: {}".format(API_KEY))
+
+```
+
+statement as we should never log secrets.
 
