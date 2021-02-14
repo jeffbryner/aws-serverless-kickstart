@@ -11,6 +11,7 @@ provider:
   environment:
     ENVIRONMENT: ${self:provider.stage}
     REGION: ${opt:region, self:provider.region}
+    API_KEY_NAME: 'kickstart_api_key'
 
 functions:
   serverless-cron:
