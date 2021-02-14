@@ -12,6 +12,13 @@ provider:
     ENVIRONMENT: ${self:provider.stage}
     REGION: ${opt:region, self:provider.region}
     API_KEY_NAME: 'kickstart_api_key'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource:
+        - "arn:aws:secretsmanager:${opt:region, self:provider.region}:*:secret:${self:provider.environment.API_KEY_NAME}*"
+
 
 functions:
   serverless-cron:
