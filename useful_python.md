@@ -169,7 +169,7 @@ This allows our function to get the secret value for the ARN associated with our
 
 At this point you can deploy your function and it should be able to read and log the dummy value we used as an api key secret.
 
-When you are satisfied it works, be sure to remote the:
+When you are satisfied it works, be sure to remove the:
 
 ```python
 logger.debug("API Key is: {}".format(API_KEY))
@@ -178,3 +178,96 @@ logger.debug("API Key is: {}".format(API_KEY))
 
 statement as we should never log secrets.
 
+## Useful python
+[Shodan](https://shodan.io) is a great resource for any security professional. It constantly scans the internet, collecting and cataloging intelligence on open ports and services.
+
+Let's hook our serverless function up to it to gather some interesting data. If you don't have an account, take a moment to sign up (free as of this writing) and make note of the api key for your account.
+
+There [are a bunch of useful queries](https://github.com/jakejarvis/awesome-shodan-queries) you can run with shodan. Lets target the windows version of [the quote of the day service by looking for port 17 on a windows system](https://github.com/jakejarvis/awesome-shodan-queries#tcp-quote-of-the-day--).
+
+
+### python
+First, lets add the [requests library](https://pypi.org/project/requests/) to do the api call/retrieval.
+
+```bash
+pipenv install requests
+```
+Next up, alter your handler.py code to import requests and build the url we will use for an HTTPS GET request.
+
+```python
+import requests # add to your import section at the beginning
+
+# add just before the cron function
+QUERY='port:17 product:"Windows qotd"'
+url=f"https://api.shodan.io/shodan/host/search?key={API_KEY}&query={QUERY}"
+
+```
+
+And alter your cron function to be the following:
+
+```python
+def cron(event, context):
+    logger.debug("Event is: {}".format(event))
+    logger.debug("Context is: {}".format(context))
+    logger.debug("API Key name is: {}".format(API_KEY_NAME))
+
+    shodan_results = []
+    result_count = 0
+    result = requests.get(url)
+    if result.status_code == 200:
+        shodan_results = result.json()["matches"]
+        result_count = result.json()["total"]
+        for result in shodan_results[:5]:
+            logger.info(f"{result['location']['country_name']} says {result['data']}")
+
+    logger.info(f"retrieved {len(shodan_results)} out of {result_count} total results ")
+
+```
+
+As you can see, now in our handler cron function we are calling shodan, checking the status code and returning portions of the top 5 quotes and some basic stats about the results.
+
+### deployment
+Be sure to set your api key in AWS to the one you retrieved from your shodan account:
+
+```bash
+aws secretsmanager update-secret --secret-id kickstart_api_key --secret-string "shodan api key goes here"
+```
+
+Deploy your latest version:
+
+```bash
+sls deploy --stage dev
+```
+
+And after a minute (or whatever your frequency is set to), you should see the results in the logs or you can invoke the function to have it run immediately:
+
+```bash
+sls invoke --function serverless-cron
+```
+
+```bash
+sls logs --function serverless-cron
+```
+
+You should see output similar to :
+
+```bash
+
+START RequestId: 8233c30e-9ff1-4731-b4e9-7f94ef0d70d1 Version: $LATEST
+2021-02-14 17:29:41.342 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	Event is: {}
+2021-02-14 17:29:41.342 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	Context is: <bootstrap.LambdaContext object at 0x7f31b75b8d50>
+2021-02-14 17:29:41.342 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	API Key name is: kickstart_api_key
+2021-02-14 17:29:41.344 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	Starting new HTTPS connection (1): api.shodan.io:443
+2021-02-14 17:29:41.649 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	https://api.shodan.io:443 "GET /shodan/host/search?key=0VndJYSmUlqGy7NWG2hijigot7PUFoPv&query=port:17%20product:%22Windows%20qotd%22 HTTP/1.1" 200 None
+2021-02-14 17:29:41.710 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	Bangladesh says "My spelling is Wobbly.  It's good spelling but it Wobbles, and the letters
+get in the wrong places." A. A. Milne (1882-1958)
+2021-02-14 17:29:41.711 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	Brazil says "A vida, como a antiga Tebas, tem cem portas. Feche uma, outras se abrirao."\r\n ("Viver, v\xa0rias hist\xa2rias", Machado de Assis)\r\n
+2021-02-14 17:29:41.711 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	United States says "Here's the rule for bargains: "Do other men, for they would do you."
+That's the true business precept." Charles Dickens (1812-70)
+2021-02-14 17:29:41.711 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	South Korea says "Man can climb to the highest summits, but he cannot dwell there long."
+George Bernard Shaw (1856-1950)
+2021-02-14 17:29:41.711 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	South Korea says "A wonderful fact to reflect upon, that every human creature is constituted
+to be that profound secret and mystery to every other."
+Charles Dickens (1812-70)
+2021-02-14 17:29:41.711 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	retrieved 100 out of 37401 total results
+```
