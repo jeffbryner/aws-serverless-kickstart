@@ -169,7 +169,7 @@ This allows our function to get the secret value for the ARN associated with our
 
 At this point you can deploy your function and it should be able to read and log the dummy value we used as an api key secret.
 
-NOTE: Be sure that your Pipfile is in the same directory as your .serverless directory so that the serverless framework is able to notice that we will be using the boto3 and can package it up when it sends the function to AWS.
+NOTE: Be sure that your Pipfile is in the same directory as your serverless.yml file so that the serverless framework is able to notice that we will be using the boto3 and can package it up when it sends the function to AWS.
 
 When you are satisfied it works, be sure to remove the:
 
@@ -237,7 +237,7 @@ aws secretsmanager update-secret --secret-id kickstart_api_key --secret-string "
 
 
 Deploy your latest version:
-(NOTE: Be sure that your Pipfile is in the same directory as your .serverless directory so that the serverless framework is able to notice the dependencies (boto3, requests) and can package it up when it sends the function to AWS.)
+(NOTE: Be sure that your Pipfile is in the same directory as your serverless.yml file so that the serverless framework is able to notice the dependencies (boto3, requests) and can package it up when it sends the function to AWS.)
 
 ```bash
 sls deploy --stage dev
@@ -275,3 +275,5 @@ to be that profound secret and mystery to every other."
 Charles Dickens (1812-70)
 2021-02-14 17:29:41.711 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	retrieved 100 out of 37401 total results
 ```
+
+Please note that leaving this function set to run at a high frequency isn't encouraged as it will likely use all of your shodan.io api request call allotment.
