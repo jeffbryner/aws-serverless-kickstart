@@ -228,7 +228,7 @@ def cron(event, context):
 
 As you can see, now in our handler cron function we are calling shodan, checking the status code and returning portions of the top 5 quotes and some basic stats about the results.
 
-### deployment
+### Deployment
 Be sure to set your api key in AWS to the one you retrieved from your shodan account:
 
 ```bash
@@ -262,7 +262,7 @@ START RequestId: 8233c30e-9ff1-4731-b4e9-7f94ef0d70d1 Version: $LATEST
 2021-02-14 17:29:41.342 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	Context is: <bootstrap.LambdaContext object at 0x7f31b75b8d50>
 2021-02-14 17:29:41.342 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	API Key name is: kickstart_api_key
 2021-02-14 17:29:41.344 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	Starting new HTTPS connection (1): api.shodan.io:443
-2021-02-14 17:29:41.649 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	https://api.shodan.io:443 "GET /shodan/host/search?key=0VndJYSmUlqGy7NWG2hijigot7PUFoPv&query=port:17%20product:%22Windows%20qotd%22 HTTP/1.1" 200 None
+2021-02-14 17:29:41.649 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[DEBUG]	https://api.shodan.io:443 "GET /shodan/host/search?key=<somekey>&query=port:17%20product:%22Windows%20qotd%22 HTTP/1.1" 200 None
 2021-02-14 17:29:41.710 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	Bangladesh says "My spelling is Wobbly.  It's good spelling but it Wobbles, and the letters
 get in the wrong places." A. A. Milne (1882-1958)
 2021-02-14 17:29:41.711 (-08:00)	8233c30e-9ff1-4731-b4e9-7f94ef0d70d1	[INFO]	Brazil says "A vida, como a antiga Tebas, tem cem portas. Feche uma, outras se abrirao."\r\n ("Viver, v\xa0rias hist\xa2rias", Machado de Assis)\r\n
