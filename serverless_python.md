@@ -59,7 +59,7 @@ functions:
     timeout: 600
     reservedConcurrency: 1
     events:
-      - schedule: rate(1 minute)
+      - schedule: rate(1 hour)
 
 package:
   exclude:
