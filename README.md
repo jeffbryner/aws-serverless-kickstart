@@ -15,7 +15,7 @@ Here's what this kickstart covers:
  - Setup your [AWS command line environment](aws_cli.md)
  - Setup [serverless environment](serverless_setup.md)
  - [Create and deploy a simple serverless python cron job](serverless_python.md)
- - [Make serverless cron job useful](useful_python.md), running a [shodan.io](https://shodan.io) query and depositing the results in a google spreadsheet
+ - [Make serverless cron job useful](useful_python.md), running a [shodan.io](https://shodan.io) query to get quotes of the day and depositing the results in a google spreadsheet
 
 
  At the end of the tutorial, you'll have a serverless function running in AWS on a regular basis that queries shodan.io and deposits the results in a google spreadsheet:
@@ -24,4 +24,5 @@ Here's what this kickstart covers:
 # References
 Here's some handy references:
 - [AWS Documentation index](https://docs.aws.amazon.com/index.html)
-
+- [public security apis](https://github.com/public-apis/public-apis#security)
+- [shodan queries](https://github.com/jakejarvis/awesome-shodan-queries)
