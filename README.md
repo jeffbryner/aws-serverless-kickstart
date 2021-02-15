@@ -15,7 +15,11 @@ Here's what this kickstart covers:
  - Setup your [AWS command line environment](aws_cli.md)
  - Setup [serverless environment](serverless_setup.md)
  - [Create and deploy a simple serverless python cron job](serverless_python.md)
- - [Make serverless cron job useful](useful_python.md), running a [shodan.io](https://shodan.io) query
+ - [Make serverless cron job useful](useful_python.md), running a [shodan.io](https://shodan.io) query and depositing the results in a google spreadsheet
+
+
+ At the end of the tutorial, you'll have a serverless function running in AWS on a regular basis that queries shodan.io and deposits the results in a google spreadsheet:
+ ![shodan workbook](shodan_output.png)
 
 # References
 Here's some handy references:

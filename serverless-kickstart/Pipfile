@@ -9,6 +9,7 @@ black = "*"
 [packages]
 boto3 = "*"
 requests = "*"
+gspread = "*"
 
 [requires]
 python_version = "3.7"

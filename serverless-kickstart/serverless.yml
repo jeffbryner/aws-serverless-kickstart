@@ -12,12 +12,18 @@ provider:
     ENVIRONMENT: ${self:provider.stage}
     REGION: ${opt:region, self:provider.region}
     API_KEY_NAME: 'kickstart_api_key'
+    SERVICE_ACCOUNT_SECRET_NAME: 'kickstart_service_account'
   iamRoleStatements:
     - Effect: Allow
       Action:
         - secretsmanager:GetSecretValue
       Resource:
         - "arn:aws:secretsmanager:${opt:region, self:provider.region}:*:secret:${self:provider.environment.API_KEY_NAME}*"
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource:
+        - "arn:aws:secretsmanager:${opt:region, self:provider.region}:*:secret:${self:provider.environment.SERVICE_ACCOUNT_SECRET_NAME}*"
 
 
 functions:

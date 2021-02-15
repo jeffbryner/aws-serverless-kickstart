@@ -2,6 +2,9 @@ import boto3
 import os
 import logging
 import requests
+import gspread
+import json
+from google.oauth2.service_account import Credentials
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -15,6 +18,20 @@ API_KEY_NAME = os.environ.get("API_KEY_NAME", "api_key")
 API_KEY = secrets_manager.get_secret_value(SecretId=API_KEY_NAME)["SecretString"]
 QUERY = 'port:17 product:"Windows qotd"'
 url = f"https://api.shodan.io/shodan/host/search?key={API_KEY}&query={QUERY}"
+
+DEFAULT_SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
+SERVICE_ACCOUNT_SECRET_NAME = os.environ.get("SERVICE_ACCOUNT_SECRET_NAME", "")
+service_json = secrets_manager.get_secret_value(SecretId=SERVICE_ACCOUNT_SECRET_NAME)[
+    "SecretString"
+]
+service_dict = json.loads(service_json)
+credentials = Credentials.from_service_account_info(
+    info=service_dict, scopes=DEFAULT_SCOPES
+)
+gc = gspread.authorize(credentials)
 
 
 def cron(event, context):
@@ -31,3 +48,10 @@ def cron(event, context):
         for result in shodan_results[:5]:
             logger.info(f"{result['location']['country_name']} says {result['data']}")
     logger.info(f"retrieved {len(shodan_results)} out of {result_count} total results ")
+
+    sh = gc.open("shodan output")
+    worksheet = sh.sheet1
+    for i, result in enumerate(shodan_results[:5], start=1):
+        worksheet.update_cell(
+            i, 1, f"{result['location']['country_name']} says {result['data']}"
+        )

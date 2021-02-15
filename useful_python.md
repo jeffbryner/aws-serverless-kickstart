@@ -180,7 +180,7 @@ logger.debug("API Key is: {}".format(API_KEY))
 
 statement as we should never log secrets.
 
-## Useful python
+## Useful python: Shodan
 [Shodan](https://shodan.io) is a great resource for any security professional. It constantly scans the internet, collecting and cataloging intelligence on open ports and services.
 
 Let's hook our serverless function up to it to gather some interesting data. If you don't have an account, take a moment to sign up (free as of this writing) and make note of the api key for your account.
@@ -277,3 +277,117 @@ Charles Dickens (1812-70)
 ```
 
 Please note that leaving this function set to run at a high frequency isn't encouraged as it will likely use all of your shodan.io api request call allotment.
+
+
+
+## Useful python: Google Sheets
+So now we can call an api, retrieve information and do basic logging of that information. Lets make this a bit more useful and send the output of the api to somewhere. Google sheets is a good destination as it involves yet another api and can allow us to have our output visible beyond just the serverless logs.
+
+In this section we will take the output from shodan and put it in a Google sheet [using the gspread library](https://pypi.org/project/gspread/).
+
+
+### Google Authentication
+Google's apis can be accessed by making a project and creating a service account that is granted access to the specific apis needed. Gspread does a [good job explaining the process here in the section "for Bots: using a service account](https://gspread.readthedocs.io/en/latest/oauth2.html#enable-api-access-for-a-project).
+
+
+The steps are roughtly:
+
+- Create a new project in the [google developers console](https://console.developers.google.com/project)
+- Add the google drive api to the project (search apis and enable)
+- Add the google sheets api to the project (search apis and enable)
+- Create a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts), create a service account key and download the .json file with credentials.
+
+This json file will have the private key, client id and client email address for the service account. Keep this file safe and don't upload it to any public sites (github, etc).
+
+Create a spreadsheet called 'shodan output' in google sheets and 'share' editor access to the sheet to the client email address listed in the json file. It should be something like 'service-account-name@project-name@iam.gserviceaccount.com'.
+
+Now that we have the google part configured, lets modify our serverless function to send it's output to our google sheet.
+
+### Serverless
+To allow serverless access to our google sheet we need to:
+- enable the gspread library
+- store the service account json credential in secrets manager
+- allow the serverless function access to the AWS secret holding the json credential
+- modify our code to authenticate with this credential and store output in the google sheet
+
+To enable the gspread library issue the following statement at the command line:
+
+```bash
+pipenv install gspread
+```
+
+To store the service account json credential in secrets manager issue the following statement at the command line:
+
+```bash
+aws secretsmanager create-secret --name kickstart_service_account --description "kickstart tutorial google service acount" --secret-string file://path/to/your/jsonfile.json
+```
+
+Allow your function to access the credentials by adding a permission in your serverless.yml file. You'll need a new environment variable holding the name you gave to the service account secret, and a role statement granting permission to read the secret:
+
+```yaml
+  ENVIRONMENT:
+    SERVICE_ACCOUNT_SECRET_NAME: 'kickstart_service_account'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - secretsmanager:GetSecretValue
+      Resource:
+        - "arn:aws:secretsmanager:${opt:region, self:provider.region}:*:secret:${self:provider.environment.SERVICE_ACCOUNT_SECRET_NAME}*"
+```
+
+### Python
+Now that we have a secret granting us permission, lets wire up gspread to use the secret and get access to the spreadsheet.
+
+```python
+# add these to your imports
+import gspread
+import json
+from google.oauth2.service_account import Credentials
+
+# add scopes for gspread to your variables section
+DEFAULT_SCOPES =[
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
+
+# add the following just before your cron function
+SERVICE_ACCOUNT_SECRET_NAME = os.environ.get("SERVICE_ACCOUNT_SECRET_NAME", "")
+service_json = secrets_manager.get_secret_value(SecretId=SERVICE_ACCOUNT_SECRET_NAME)[
+    "SecretString"
+]
+service_dict = json.loads(service_json)
+credentials = Credentials.from_service_account_info(
+    info=service_dict, scopes=DEFAULT_SCOPES
+)
+gc = gspread.authorize(credentials)
+```
+
+The code we added sets up scopes we wish to use, retrieves the json we stored in an AWS secret, converts the json to a python dictionary and then uses that to authorize gspread to use our google service account we created earlier.
+
+Now that we have access to google sheets, we can use it to access our spreedsheet and use the api results from shodan!
+
+Alter the end of your cron function to include the following after retrieving the results from shodan:
+
+```python
+
+    # add this code just after the logger.info shodan results
+    # lets write the first 5 results to the spreadsheet
+    sh = gc.open("shodan output")
+    worksheet = sh.sheet1
+    for i, result in enumerate(shodan_results[:5], start=1):
+        worksheet.update_cell(
+            i, 1, f"{result['location']['country_name']} says {result['data']}"
+        )
+
+
+```
+
+Now deploy the serverless function, invoke it and you should have 5 quotes of the day from random servers on the internet in your spreadsheet!
+
+```bash
+sls deploy --stage dev --verbose
+sls invoke --function serverless-cron
+```
+
+![shodan workbook](shodan_output.png)
+
