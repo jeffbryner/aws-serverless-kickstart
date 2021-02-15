@@ -15,7 +15,7 @@ Here's what this kickstart covers:
  - Setup your [AWS command line environment](aws_cli.md)
  - Setup [serverless environment](serverless_setup.md)
  - [Create and deploy a simple serverless python cron job](serverless_python.md)
- - Make serverless cron job useful (simple gspread integration)
+ - [Make serverless cron job useful](useful_python.md), running a [shodan.io](https://shodan.io) query
 
 # References
 Here's some handy references:
