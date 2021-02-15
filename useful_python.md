@@ -81,7 +81,7 @@ If you like you can deploy this version and test the output using the same patte
 Good code doesn't store secrets insecurely. AWS has a service just for this called secrets manager! Here's how we use it in our serverless function.
 
 ### AWS
-To store a secret in [AWS secrets manager](https://docs.aws.amazon.com/cli/latest/reference/secretsmanager/create-secret.html#examples):
+To store a secret in [AWS secrets manager](https://docs.aws.amazon.com/cli/latest/reference/secretsmanager/create-secret.html#examples) from the command line, issue this statement:
 
 ```bash
 aws secretsmanager create-secret --name kickstart_api_key --description "kickstart tutorial api key" --secret-string "apikeygoeshere"
@@ -118,7 +118,7 @@ You should receive output like this:
 }
 ```
 
-To update/change an existing secret:
+To update/change an existing secret issue the following statement from the command line:
 ```bash
 aws secretsmanager update-secret --secret-id kickstart_api_key --secret-string "newapikeygoeshere"
 ```
@@ -126,7 +126,7 @@ aws secretsmanager update-secret --secret-id kickstart_api_key --secret-string "
 ### Python
 Now that we have a sample secret stored, lets hook it up to our python function.
 
-First we will need to add the [boto](https://pypi.org/project/boto3/) library so we can hook into AWS services.
+First we will need to add the [boto](https://pypi.org/project/boto3/) library so we can hook into AWS services. From the command line add boto3 using pipenv:
 
 ```bash
 pipenv install boto3
@@ -144,7 +144,7 @@ secrets_manager = boto_session.client("secretsmanager")
 API_KEY = secrets_manager.get_secret_value(SecretId=API_KEY_NAME)["SecretString"]
 
 
-#temporarily add this to your debug statements (properly indented)
+#temporarily add this to your debug statements in your cron function (properly indented)
 logger.debug("API Key is: {}".format(API_KEY))
 
 ```
@@ -168,6 +168,8 @@ This allows our function to get the secret value for the ARN associated with our
 
 
 At this point you can deploy your function and it should be able to read and log the dummy value we used as an api key secret.
+
+NOTE: Be sure that your Pipfile is in the same directory as your .serverless directory so that the serverless framework is able to notice that we will be using the boto3 and can package it up when it sends the function to AWS.
 
 When you are satisfied it works, be sure to remove the:
 
@@ -233,7 +235,9 @@ Be sure to set your api key in AWS to the one you retrieved from your shodan acc
 aws secretsmanager update-secret --secret-id kickstart_api_key --secret-string "shodan api key goes here"
 ```
 
+
 Deploy your latest version:
+(NOTE: Be sure that your Pipfile is in the same directory as your .serverless directory so that the serverless framework is able to notice the dependencies (boto3, requests) and can package it up when it sends the function to AWS.)
 
 ```bash
 sls deploy --stage dev
